@@ -456,7 +456,7 @@ function renderEnding(){
         <div class="card">
           <div class="sub" style="margin-bottom:6px">Mensaje final para tu</div>
           <div style="font-size:18px; font-weight:700; margin-bottom:6px">${vibe}</div>
-          <div>Entre risas, dramas y partidas, siempre elegimos <b>seguir jugando juntos y ser equipo</b>. Gracias por otro año siendo mi <b>compañero</b>. — <i>Tu ${CONFIG.names.you}</i></div>
+          <div>Entre risas, dramas y partidas, siempre elegimos <b>seguir jugando juntos y ser equipo</b>. Gracias por este año siendo mi <b>compañero</b>. — <i>Tu ${CONFIG.names.you}</i></div>
         </div>
       </div>
     </div>
