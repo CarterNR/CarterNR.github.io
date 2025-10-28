@@ -1,117 +1,233 @@
 // --- Config personalizable ---
 const CONFIG = {
-  names: { you: 'Susana (Nicole)', him: 'Susano' },
-  assets: { you: 'assets/susana.jpg', him: 'assets/susano.jpg' }, // coloca tus imágenes aquí
+  names: { you: 'Susana', him: 'Susano' },
+  // Coloca tus imágenes en ./assets/ (usando .png como pediste)
+  assets: { you: 'assets/susana.png', him: 'assets/susano.png' },
 };
 
 const state = {
   levelIndex: 0,
+  cardIndex: 0,      // Soporte para múltiples "cards" en cada nivel
   score: 0,
   fragments: [],
-  difficulty: 'Normal',
   interludeNext: 1,
 };
 
 // --- Interludios (preguntas rápidas entre niveles) ---
 const interludes = {
   1: [
-    { q:'Ping rápido: ¿primera impresión de Susano?', opts:[ {t:'Buen aim, peor ortografía', s:+1}, {t:'Main tanque pero corazón support', s:+2} ] },
-    { q:'Mejor mapa para nuestra primera win:', opts:[ {t:'King’s Row', s:+2}, {t:'Junkertown (el caos nos llama)', s:+1} ]},
+    { q:'Mapa preferido entre:', opts:[ {t:'Colosseo', s:+1}, {t:'Circuit Royal', s:+2}, {t:'Mosnasterio Shambali', s:-1} ] },
+    { q:'Mejor baneo:', opts:[ {t:'Doomfist', s:+2}, {t:'Sombra', s:+1}, {t:'Tola', s:+4} ]},
   ],
   2: [
-    { q:'Respuesta correcta al “no estoy enojada” es…', opts:[ {t:'Snack + abrazo', s:+2}, {t:'“Ok” y silenciar chat', s:-2} ]},
-    { q:'Drama favorito:', opts:[ {t:'Drama sarcástico', s:+1}, {t:'Drama real', s:-1} ]},
+    { q:'Respuesta correcta al “me duelen los huevos” es…', opts:[ {t:'Ya te tomaste algo?', s:-10}, {t:'Dar una hamburguesa', s:+3} ]},
+    { q:'Mejor plan:', opts:[ {t:'Quedarnos en la casa, ver pelis, comer y coger, jeje', s:+5}, {t:'Salir a convicir con gente', s:-5} ]},
   ],
   3: [
-    { q:'Postre ideal para nosotros:', opts:[ {t:'Helado', s:+1}, {t:'Brownie con helado', s:+2} ]},
-    { q:'¿Quién roba papas?', opts:[ {t:'Los dos, obvio', s:+2}, {t:'Nadie, respeto sagrado', s:0} ]},
+    { q:'Postre ideal para nosotros:', opts:[ {t:'Helado', s:-2}, {t:'Brownie con helado', s:-2}, {t:'Algo dulce para mi(susana) y algo salado para tu(susano)', s:+3} ]},
+    { q:'Mejor cualida', opts:[ {t:'En el sillon de la casa de perez', s:+10}, {t:'En mi casa', s:+2}, {t:'En la fortuna', s:+2} ]},
   ]
 };
 
+// --- Niveles ---
+// Puedes usar:
+//   A) Formato clásico por nivel: scene/choices + quiz o quizzes
+//   B) Formato con múltiples cards: cards: [ { scene, choices, quiz/quizzes }, ... ]
 const levels = [
+  // Nivel 1 — Inicio (Discord + Overwatch)
   {
     id: 1,
-    title: 'El inicio del caos',
+    title: 'El inicio del todo',
     tag: 'Discord + OW',
+
+    // Si quieres varias "cards" dentro del mismo nivel, usa este bloque:
+    // (Ya te incluyo una card equivalente a tu escena + quizzes)
+    // Si no usas cards, se toma el formato clásico más abajo.
+    // Descomenta para usar "cards" y comenta el formato clásico:
+    /*
+    cards: [
+      {
+        scene: {
+          // Puedes omitir actor si no quieres que aparezca
+          text: 'Cuando empezamos a quedarnos hablando hasta tarde. ¿Cuál era la excusa más usada?'
+        },
+        choices: [
+          {label: 'No había excusa xd.', effect:+2, remark:'Nos hacíamos los rudos con la hora +2.'},
+          {label: 'Es que no tengo sueño.', effect:+1, remark:'Ajá, sí claro, el insomnio +1.'},
+          {label: 'Es que ud me gusta y por eso no me voy.', effect:-1, remark:'Nunca nos dijimos eso -_-, -1.'},
+        ],
+        quizzes: [
+          {
+            q: '¿Dónde fue que nos quedamos hablando hasta tarde la primera vez?',
+            options: [
+              {t:'Instagram', ok:false},
+              {t:'Discord, obvio', ok:true},
+              {t:'WhatsApp de la tía Cecilia', ok:false},
+            ],
+            onOk:+3, onBad:-2
+          },
+          {
+            q: '¿Qué juego estábamos jugando cuando empezamos a hablar?',
+            options: [
+              { t:'Overwatch', ok:true },
+              { t:'Valorant', ok:false },
+              { t:'Hello Kitty Online', ok:false },
+            ],
+            onOk:+2, onBad:-1
+          },
+          {
+            q: '¿Quién empezó el joteo primero?',
+            options: [
+              { t:'Susana, obviamente', ok:true },
+              { t:'Susano, claramente', ok:false },
+              { t:'Tola, oscuramente', ok:true },
+            ],
+            onOk:+1, onBad:-1,
+            multi:true
+          }
+        ]
+      },
+      // Agrega más cards si quieres...
+    ],
+    */
+
+    // === Formato clásico (activo por defecto si no usas cards) ===
     scene: {
-      actor: CONFIG.names.you,
-      text: 'Nos conocimos en Discord, en plena partida de Overwatch. Susano pregunta: ¿con qué héroe entro?'
+      text: 'Cuando empezamos a quedarnos hablando hasta tarde. ¿Cuál era la excusa más usada?'
     },
     choices: [
-      {label: 'Reinhardt, clásico: ¡YOLO al punto! 🛡️', effect:+2, remark:'Tanque noble, +2 por escuchar al team.'},
-      {label: 'Genji, *main dragón shinobi* 🐉', effect:+1, remark:'Genji enjoyer, te vigilamos. +1.'},
-      {label: 'Widow para “calentar la mira” 😏', effect:-1, remark:'Pro en la killcam, -1 por el objetivo.'},
+      {label: 'No había excusa xd.', effect:+2, remark:'Nos haciamos los rudos con la hora +2.'},
+      {label: 'Es que no tengo sueño.', effect:+1, remark:'Ajá, sí claro, el insomnio +1.'},
+      {label: 'Es que ud me gusta y por eso no me voy.', effect:-1, remark:'Nunca nos dijimos eso -_-, -1.'},
     ],
+    // Puedes dejar un solo "quiz"...
+    /*
     quiz: {
-      q: '¿Dónde fue nuestra primera charla larga?',
+      q: '¿Dónde fue que nos quedamos hablando hasta tarde la primera vez?',
       options: [
         {t:'Instagram', ok:false},
         {t:'Discord, obvio', ok:true},
-        {t:'WhatsApp de la tía', ok:false},
+        {t:'WhatsApp de la tía Cecilia', ok:false},
       ],
       onOk:+3, onBad:-2
     },
+    */
+    // ...o usar "quizzes" (array) para varias preguntas:
+    quizzes: [
+      {
+        q: '¿Dónde fue que nos quedamos hablando hasta tarde la primera vez?',
+        options: [
+          {t:'Instagram', ok:false},
+          {t:'Discord, obvio', ok:true},
+          {t:'WhatsApp de la tía Cecilia', ok:false},
+        ],
+        onOk:+3, onBad:-2
+      },
+      {
+        q: '¿Qué juego estábamos jugando cuando empezamos a hablar?',
+        options: [
+          { t:'Overwatch', ok:true },
+          { t:'Valorant', ok:false },
+          { t:'Hello Kitty Online', ok:false },
+        ],
+        onOk:+2, onBad:-1
+      },
+      {
+        q: '¿Quién empezó el joteo primero?',
+        options: [
+          { t:'Susana, obviamente', ok:true },
+          { t:'Susano, claramente', ok:false },
+          { t:'Tola, oscuramente', ok:false },
+        ],
+        onOk:+1, onBad:-1,
+        multi:true
+      },
+      {
+        q: '¿Qué fue lo que yo te dije que cambió todo?',
+        options: [
+          { t:'Main Mercy pero corazón Hanzo', ok:false },
+          { t:'Ud no entiende que es broma, pero si quiere no es broma', ok:true },
+          { t:'¿Tiene micro?', ok:false },
+        ],
+        onOk:+1, onBad:-1,
+        multi:true
+      }
+    ],
     fragment: 'Fragmento 1: Siempre volvemos al lobby donde empezó todo.'
   },
+
+  // Nivel 2 — Modo drama (sarcasmo amoroso)
   {
     id: 2,
-    title: 'Modo Drama™',
+    title: 'Modo Drama',
     tag: 'Sarcasmo amoroso',
     scene: {
-      actor: CONFIG.names.you,
-      text: 'Él dice: “vuelvo en 5 min”. Pasan 37. *Nicole activa el Modo Drama™*.'
+      text: 'Estamos jugando y tu(susano) me ganas. Yo te digo: ‘sabe qué, ni me hable’. ¿Qué haces?'
     },
     choices: [
-      {label: 'Meme de perdón + snack virtual 🍟', effect:+2, remark:'Diplomacia + papitas = +2.'},
-      {label: 'Decir “no estaba enojada” (mentira estratégica) 😇', effect:0, remark:'Plot twist: neutro, sobrevives.'},
-      {label: 'Entrar a otra partida sin avisar', effect:-3, remark:'¿Auto-sabotaje speedrun? -3.'},
+      {label: 'Te sales del Discord y vuelves a los 10 segundos', effect:+2, remark:'Porque dramaticos los 2 xd, +2.'}, 
+      {label: 'Me haces caso y nunca vulves', effect:-3, remark:'Eso me dolió :(, -3.'},
     ],
-    quiz: {
-      q: 'Si Susana dice “haz lo que quieras”, en realidad significa…',
-      options: [
-        {t:'Libertad total 🙃', ok:false},
-        {t:'Elige bien (guiño)', ok:true},
-        {t:'Es una trampa jurídica', ok:true},
-      ],
-      onOk:+2, onBad:-2,
-      multi:true
-    },
+    quizzes: [
+      {
+        q: 'Cuando uno de los dos gana en algo, ¿qué es lo primero que pasa?',
+        options: [
+          {t:'Celebran tranquilos como gente normal', ok:false},
+          {t:'Alguno dice, "Espero que te pares en un Lego"', ok:true},
+          {t:'Nos ignoramos 3 días', ok:false},
+        ],
+        onOk:+3, onBad:-2
+      },
+      {
+        q: '¿Quién es más dramático cuando pierde?',
+        options: [
+          { t:'Susana', ok:true },
+          { t:'Susano', ok:false },
+          { t:'Los dos, empate técnico en drama', ok:false },
+        ],
+        onOk:+2, onBad:-1
+      }
+    ],
     fragment: 'Fragmento 2: Entre el caos y la risa, elegimos paciencia.'
   },
+
+  // Nivel 3 — Paladar de niños pero hambre seria
   {
     id: 3,
-    title: 'Paladar de niños, amor gourmet',
-    tag: 'Comida FTW',
+    title: 'Paladar de niños',
+    tag: 'Comida',
     timed: true,
-    timeSec: 18,
+    timeSec: 30,
     scene: {
-      actor: CONFIG.names.him,
-      text: 'Hora de comer. El reto: elegir 3 opciones aprobadas por nuestro paladar de niños.'
+      text: 'Hora de comer. El reto: elegir 3 opciones aprobadas por LOS DOS para nuestro paladar de niños.'
     },
     foods: [
-      {t:'Pizza', good:true}, {t:'Nuggets', good:true}, {t:'Tacos', good:true}, {t:'Ensalada de kale pura', good:false},
-      {t:'Sushi con wasabi nuclear', good:false}, {t:'Papas fritas', good:true}, {t:'Hot dogs', good:true}, {t:'Quinoa triste', good:false}
+      {t:'Pizza', good:true}, {t:'Pescado entero al horno', good:false}, {t:'Ensalada rusa', good:false}, {t:'Tacos', good:true}, 
+      {t:'Ensalada de kale pura', good:false}, {t:'Sushi', good:true}, {t:'Quinoa triste', good:false}, {t:'Taco Bell', good:false},
+      {t:'Hamburguesa', good:true}, {t:'Espinaca', good:false},  {t:'Mila al horno', good:false}, {t:'Hot dogs', good:true} 
+       
     ],
     need: 3, reward:+3, penalty:-3,
     fragment: 'Fragmento 3: Compartir comida es nuestro lenguaje secreto.'
   },
+
+  // Nivel 4 — Boss final: La distancia
   {
     id: 4,
-    title: 'Boss Final: La distancia',
+    title: 'La distancia',
     tag: 'Conexión',
     scene: {
-      actor: CONFIG.names.you,
       text: 'Aunque haya kilómetros, hay rituales que nos mantienen cerca. ¿Cuál es el combo ganador?'
     },
     choices: [
-      {label: 'Videollamadas + meme diario + “buenas noches” sincero', effect:+3, remark:'Meta probada por la ciencia del amor.'},
-      {label: 'Responder a destiempo pero con ensayo de 700 palabras', effect:0, remark:'Intenso, pero… meh.'},
-      {label: 'Ignorar 2 días para “extrañarnos más”', effect:-4, remark:'No, no y no.'},
+      {label: 'Videollamadas + memes diario + hablar todo el día', effect:+10, remark:'Lo que nos ha mantenido cuerdos este año.'},
+      {label: 'Tratarnos mal y ni hacernos caso', effect:- 10, remark:'Pos no Susano, esa respuestita nada que ver.'},
+      {label: 'Ignorarnos 2 días para “extrañarnos más”', effect:-4, remark:'No, no y no.'},
     ],
     quiz: {
       q: 'Clave final: ¿cómo nos llamamos en chiste?',
       options: [
-        {t:'Rey & Reina', ok:false},
+        {t:'Baby o Bebé', ok:false},
         {t:'Susano & Susana', ok:true},
         {t:'Main & Support', ok:false}
       ],
@@ -129,7 +245,6 @@ const screen = $('#screen');
 function setHUD(){
   $('#score').textContent = state.score;
   $('#level').textContent = state.levelIndex+1;
-  $('#diff').textContent = state.difficulty;
 }
 
 function renderLevel(){
@@ -137,71 +252,91 @@ function renderLevel(){
   setHUD();
   screen.innerHTML = '';
 
+  // Si hay cards, tomamos la card actual; si no, usamos el nivel “clásico”
+  const hasCards = Array.isArray(L.cards) && L.cards.length > 0;
+  const C = hasCards ? L.cards[state.cardIndex] : null;
+
+  const sceneActor = hasCards ? (C.scene?.actor ?? '') : (L.scene?.actor ?? '');
+  const sceneText  = hasCards ? (C.scene?.text  ?? '') : (L.scene?.text  ?? '');
+  const tag        = L.tag ?? '';
+
   const wrap = document.createElement('section');
   wrap.className = 'card';
   wrap.innerHTML = `
     <div class="status">
       <span class="level-tag">Nivel ${L.id}: ${L.title}</span>
-      <div style="min-width:200px" class="progress"><i id="pbar"></i></div>
+      <div style="min-width:50%" class="progress"><i id="pbar"></i></div>
     </div>
     <div class="row" style="align-items:flex-start">
       <div class="col">
-        <div class="actor"><span class="chip">${L.tag}</span></div>
-        <div class="bubble" style="margin-top:10px">${L.scene.actor}: ${L.scene.text}</div>
+        <div class="actor">
+          <span class="chip">${tag}</span>
+          ${hasCards ? `<span class="chip" style="margin-left:8px">Card ${state.cardIndex+1}/${L.cards.length}</span>` : ''}
+        </div>
+        <div class="bubble" style="margin-top:10px">${sceneActor ? `${sceneActor}: ` : ''}${sceneText}</div>
       </div>
       <div class="col" id="rightCol"></div>
     </div>
   `;
   screen.appendChild(wrap);
 
-  // Choices (if any)
   const col = $('#rightCol');
-  if(L.choices){
+
+  // CHOICES
+  const choices = hasCards ? C.choices : L.choices;
+  if(choices && choices.length){
     const box = document.createElement('div');
     box.className = 'choices';
-    L.choices.forEach((c)=>{
+    choices.forEach((c)=>{
       const b = document.createElement('button');
       b.className = 'btn';
       b.textContent = c.label;
       b.addEventListener('click',()=>{
-        state.score += c.effect;
-        toast(c.remark, c.effect>=0?'good':'bad');
+        state.score += c.effect || 0;
+        if(c.remark) toast(c.remark, (c.effect||0) >= 0 ? 'good':'bad');
         setHUD();
-        b.disabled = true; b.classList.add(c.effect>=0?'good':'bad');
+        b.disabled = true; b.classList.add((c.effect||0) >= 0 ? 'good':'bad');
       });
       box.appendChild(b);
     });
     col.appendChild(box);
   }
 
-  // Quiz
-  if(L.quiz){
+  // QUIZZES (soporta quiz único o varios) – toma de la card o del nivel
+  const quizzes = (() => {
+    const src = hasCards ? C : L;
+    if (Array.isArray(src.quizzes)) return src.quizzes;
+    if (src.quiz) return [src.quiz];
+    return [];
+  })();
+
+  quizzes.forEach((quizObj, idx)=>{
     const q = document.createElement('div'); q.className='card'; q.style.marginTop='14px';
-    q.innerHTML = `<div class=\"sub\" style=\"margin-bottom:6px\">Quiz</div><div style=\"font-weight:700; margin-bottom:8px\">${L.quiz.q}</div>`;
+    q.innerHTML = `<div class="sub" style="margin-bottom:6px">Quiz ${quizzes.length>1? (idx+1): ''}</div><div style="font-weight:700; margin-bottom:8px">${quizObj.q}</div>`;
     const opts = document.createElement('div'); opts.className='choices';
     q.appendChild(opts);
-    L.quiz.options.forEach(o=>{
+    (quizObj.options||[]).forEach(o=>{
       const b = document.createElement('button'); b.className='btn'; b.textContent=o.t;
       b.addEventListener('click',()=>{
-        if(o.ok){ state.score += L.quiz.onOk; toast('Correcto 👏', 'good'); b.classList.add('good'); }
-        else{ state.score += L.quiz.onBad; toast('Ups, plot twist 😅', 'bad'); b.classList.add('bad'); }
+        if(o.ok){ state.score += quizObj.onOk || 0; toast('Correcto 👏', 'good'); b.classList.add('good'); }
+        else{ state.score += quizObj.onBad || 0; toast('Ups, plot twist 😅', 'bad'); b.classList.add('bad'); }
         setHUD(); b.disabled = true;
-        if(!L.quiz.multi){ $$('button', opts).forEach(x=>x.disabled=true); }
+        if(!quizObj.multi){ $$('button', opts).forEach(x=>x.disabled=true); }
       });
       opts.appendChild(b);
     });
     col.appendChild(q);
-  }
+  });
 
-  // Timed mini-game
+  // Timed mini-game (formato clásico del nivel)
   if(L.timed){
     const zone = document.createElement('div'); zone.className='card'; zone.style.marginTop='14px';
     zone.innerHTML = `
-      <div class=\"sub\" style=\"margin-bottom:6px\">Reto rápido</div>
-      <div style=\"margin-bottom:10px\">Elige <b>${L.need}</b> favoritos antes de que el tiempo llegue a 0.</div>
-      <div class=\"status\" style=\"margin-bottom:8px\"><span>⏱️ Tiempo: <b id=\"timer\">${L.timeSec}</b>s</span><span>Elegidos: <b id=\"picked\">0</b>/${L.need}</span></div>
-      <div class=\"grid\" id=\"foods\"></div>
-      <div class=\"center\" style=\"margin-top:10px\"><button class=\"btn\" id=\"btnEnviar\" disabled>Enviar</button></div>
+      <div class="sub" style="margin-bottom:6px">Reto rápido</div>
+      <div style="margin-bottom:10px">Elige <b>${L.need}</b> favoritos antes de que el tiempo llegue a 0.</div>
+      <div class="status" style="margin-bottom:8px"><span>⏱️ Tiempo: <b id="timer">${L.timeSec}</b>s</span><span>Elegidos: <b id="picked">0</b>/${L.need}</span></div>
+      <div class="grid" id="foods"></div>
+      <div class="center" style="margin-top:10px"><button class="btn" id="btnEnviar" disabled>Enviar</button></div>
     `;
     col.appendChild(zone);
     const foods = $('#foods');
@@ -236,16 +371,36 @@ function renderLevel(){
     }
   }
 
-  // Next button
+  // BOTÓN SIGUIENTE
   const next = document.createElement('div'); next.className='center';
-  const btnN = document.createElement('button'); btnN.className='btn primary'; btnN.textContent = state.levelIndex < levels.length-1 ? 'Siguiente →' : 'Ver final ✨';
+  const btnN = document.createElement('button'); btnN.className='btn primary';
+
+  const moreCards = hasCards && state.cardIndex < L.cards.length - 1;
+  const moreLevels = state.levelIndex < levels.length - 1;
+  btnN.textContent = moreCards ? 'Siguiente →'
+                    : moreLevels ? 'Siguiente →'
+                    : 'Ver final ✨';
+
   btnN.addEventListener('click', ()=>{
-    state.fragments.push(levels[state.levelIndex].fragment);
-    const after = interludes[state.levelIndex+1];
-    if(after && after.length && state.levelIndex < levels.length-1){ renderInterlude(state.levelIndex+1); }
-    else if(state.levelIndex < levels.length-1){ state.levelIndex++; renderLevel(); }
-    else{ renderEnding(); }
+    // Guarda el fragment del nivel una sola vez (cuando terminas el nivel)
+    if(!hasCards || (hasCards && state.cardIndex === L.cards.length - 1)){
+      if (L.fragment) state.fragments.push(L.fragment);
+    }
+
+    if(moreCards){
+      state.cardIndex++;
+      renderLevel();
+    }else if(moreLevels){
+      state.cardIndex = 0;
+      const after = interludes[state.levelIndex+1];
+      if(after && after.length){ renderInterlude(state.levelIndex+1); }
+      else { state.levelIndex++; renderLevel(); }
+    }else{
+      state.cardIndex = 0;
+      renderEnding();
+    }
   });
+
   next.appendChild(btnN); screen.appendChild(next);
 }
 
@@ -254,12 +409,12 @@ function renderInterlude(key){
   screen.innerHTML = '';
   const list = interludes[key];
   const wrap = document.createElement('section'); wrap.className='card';
-  wrap.innerHTML = `<div class=\"status\"><span class=\"level-tag\">Entre niveles</span><span class=\"sub\">Ronda relámpago (${list.length} preguntas)</span></div>`;
+  wrap.innerHTML = `<div class="status"><span class="level-tag">Entre niveles</span><span class="sub">Ronda relámpago</span></div>`;
   const box = document.createElement('div'); box.className='choices'; box.style.marginTop='10px';
   wrap.appendChild(box);
   list.forEach((q, idx)=>{
     const panel = document.createElement('div'); panel.className='card'; panel.style.background='#191d4b'; panel.style.borderColor='rgba(255,255,255,.08)';
-    panel.innerHTML = `<div style=\"font-weight:700; margin-bottom:6px\">${idx+1}. ${q.q}</div>`;
+    panel.innerHTML = `<div style="font-weight:700; margin-bottom:6px">${idx+1}. ${q.q}</div>`;
     const opt = document.createElement('div'); opt.className='choices';
     q.opts.forEach(o=>{
       const b = document.createElement('button'); b.className='btn'; b.textContent=o.t; b.addEventListener('click',()=>{ b.disabled=true; state.score+=o.s; setHUD(); b.classList.add(o.s>=0?'good':'bad'); });
@@ -269,7 +424,11 @@ function renderInterlude(key){
   });
   const cta = document.createElement('div'); cta.className='center';
   const btn = document.createElement('button'); btn.className='btn primary'; btn.textContent='Seguir';
-  btn.addEventListener('click', ()=>{ state.levelIndex++; renderLevel(); });
+  btn.addEventListener('click', ()=>{
+    state.levelIndex++;
+    state.cardIndex = 0;     // arranca la primera card del siguiente nivel
+    renderLevel();
+  });
   cta.appendChild(btn);
   screen.appendChild(wrap); screen.appendChild(box); screen.appendChild(cta);
 }
@@ -279,39 +438,39 @@ function renderEnding(){
   screen.innerHTML = '';
   const wrap = document.createElement('section'); wrap.className='card';
   const total = Math.max(0, state.score);
-  const vibe = total>=8 ? 'Pareja experta 🏆' : total>=3 ? 'Relación seria 💞' : 'Sobrevivientes del caos 😅';
+  const vibe = total>=8 ? 'Pareja experta 🏆' : total>=3 ? 'Relación seria 💞' : 'Sobrevivientes a la distancia 😅';
   wrap.innerHTML = `
-    <div class=\"status\"><span class=\"level-tag\">Final</span>
-      <div class=\"progress\" style=\"min-width:220px\"><i style=\"width:${Math.min(100,(total+8)*6)}%\"></i></div>
+    <div class="status"><span class="level-tag">Final</span>
+      <div class="progress" style="min-width:220px"><i style="width:${Math.min(100,(total+8)*6)}%"></i></div>
     </div>
-    <div class=\"ending\" id=\"ending\">
-      <div class=\"sky\"></div>
-      <div class=\"avatar a-left\" id=\"avaL\"><img id=\"imgL\" alt=\"Susana\"></div>
-      <div class=\"avatar a-right\" id=\"avaR\"><img id=\"imgR\" alt=\"Susano\"></div>
+    <div class="ending" id="ending">
+      <div class="sky"></div>
+      <div class="avatar a-left" id="avaL"><img id="imgL" alt="Susana"></div>
+      <div class="avatar a-right" id="avaR"><img id="imgR" alt="Susano"></div>
     </div>
-    <div class=\"row\">
-      <div class=\"col\">
-        <div class=\"bubble\">${state.fragments.map(f=>`• ${f}`).join('<br>')}</div>
-      </div>
-      <div class=\"col\">
-        <div class=\"card\">
-          <div class=\"sub\" style=\"margin-bottom:6px\">Mensaje final</div>
-          <div style=\"font-size:18px; font-weight:700; margin-bottom:6px\">${vibe}</div>
-          <div>Entre risas, dramas y partidas, siempre elegimos <b>seguir jugando juntos</b>. Gracias por otro año siendo mi <b>compañero de caos</b>. — <i>Tu ${CONFIG.names.you}</i></div>
+    <div class="center" style="margin-top:10px; margin-bottom: 20px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap">
+      <button class="btn" id="btnAnim">Reproducir animación 💫</button>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <div class="sub" style="margin-bottom:6px">Mensaje final para tu</div>
+          <div style="font-size:18px; font-weight:700; margin-bottom:6px">${vibe}</div>
+          <div>Entre risas, dramas y partidas, siempre elegimos <b>seguir jugando juntos y ser equipo</b>. Gracias por otro año siendo mi <b>compañero</b>. — <i>Tu ${CONFIG.names.you}</i></div>
         </div>
       </div>
-    </div>
-    <div class=\"center\" style=\"margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap\">
-      <button class=\"btn\" id=\"btnAnim\">Reproducir animación 💫</button>
-      <button class=\"btn\" id=\"btnSave\">Guardar como imagen</button>
     </div>
   `;
   screen.appendChild(wrap);
 
   loadAvatarsFromAssets();
 
-  document.getElementById('btnAnim').addEventListener('click', playEnding);
-  document.getElementById('btnSave').addEventListener('click', saveEndingAsImage);
+  const btnAnim = document.getElementById('btnAnim');
+  if (btnAnim) btnAnim.addEventListener('click', playEnding);
+
+  // Solo agrega listener si existe el botón (por si no lo tienes en el HTML)
+  const btnSave = document.getElementById('btnSave');
+  if (btnSave) btnSave.addEventListener('click', saveEndingAsImage);
 }
 
 function playEnding(){
@@ -349,7 +508,7 @@ function toast(msg, mood='good'){
   const t = document.createElement('div');
   t.textContent = msg; t.className = 'chip';
   t.style.position='fixed'; t.style.left='50%'; t.style.top='16px'; t.style.transform='translateX(-50%)';
-  t.style.zIndex=9999; t.style.background = mood==='good'? 'rgba(104,244,163,.18)' : 'rgba(255,107,136,.18)';
+  t.style.zIndex=9999; t.style.background = mood==='good'? 'rgba(27, 85, 51, 1)' : 'rgba(97, 28, 42, 0.79)';
   t.style.borderColor = mood==='good'? 'rgba(104,244,163,.6)' : 'rgba(255,107,136,.6)';
   document.body.appendChild(t);
   setTimeout(()=>{ t.style.transition='all .3s ease'; t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(-8px)'; }, 1200);
@@ -366,9 +525,17 @@ function loadAvatarsFromAssets(){
 
 // Boot y reinicio
 window.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('btnRestart').addEventListener('click', ()=>{
-    state.levelIndex = 0; state.score = 0; state.fragments = []; state.difficulty = 'Normal'; state.interludeNext = 1;
-    renderLevel();
-  });
+  const btnRestart = document.getElementById('btnRestart');
+  if (btnRestart) {
+    btnRestart.addEventListener('click', ()=>{
+      // Reinicio completo
+      state.levelIndex = 0;
+      state.cardIndex  = 0;
+      state.score = 0;
+      state.fragments = [];
+      state.interludeNext = 1;
+      renderLevel();
+    });
+  }
   renderLevel();
 });
